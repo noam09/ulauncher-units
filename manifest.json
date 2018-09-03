@@ -1,0 +1,20 @@
+{
+  "manifest_version": "1",
+  "api_version": "1",
+  "name": "Units",
+  "description": "Quick offline unit conversion",
+  "developer_name": "noam09",
+  "icon": "images/icon.svg",
+  "options": {
+    "query_debounce": 0.1
+  },
+  "preferences": [
+    {
+      "id": "pint",
+      "type": "keyword",
+      "name": "Units",
+      "description": "Quick offline unit conversion",
+      "default_value": "u"
+    }
+  ]
+}
