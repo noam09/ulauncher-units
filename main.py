@@ -42,7 +42,7 @@ class KeywordQueryEventListener(EventListener):
             elif len(elem) > 1:
                 src, dst = term.split(' in ')
         try:
-            print(Q_(src).to(dst))
+            # print(Q_(src).to(dst))
             result = description = str(Q_(src).to(dst))
         except Exception as e:
             result = description = "No result"
