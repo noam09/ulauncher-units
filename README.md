@@ -4,4 +4,4 @@
 
 Icons from the [Numix project](https://github.com/numixproject).
 
-![ulauncher-units extension screenshot](screenshot.png)
+![ulauncher-units extension demo](demo.gif)
