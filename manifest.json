@@ -1,6 +1,5 @@
 {
-  "manifest_version": "1",
-  "api_version": "1",
+  "required_api_version": "^2.0.0",
   "name": "Units",
   "description": "Quick offline unit conversion",
   "developer_name": "noam09",
