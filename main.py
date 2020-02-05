@@ -8,7 +8,7 @@ from ulauncher.api.shared.action.RenderResultListAction import RenderResultListA
 from ulauncher.api.shared.action.CopyToClipboardAction import CopyToClipboardAction
 from pint import UnitRegistry
 
-ureg = UnitRegistry()
+ureg = UnitRegistry(autoconvert_offset_to_baseunit=True)
 Q_ = ureg.Quantity
 
 logging.basicConfig()
