@@ -25,7 +25,7 @@ class UnitsExtension(Extension):
 class KeywordQueryEventListener(EventListener):
     def on_event(self, event, extension):
         # Get query
-        term = (event.get_argument() or '').lower()
+        term = (event.get_argument() or '')
         elem = term.split(' to ')
         if len(elem) > 1:
             src, dst = term.split(' to ')
