@@ -42,8 +42,9 @@ class KeywordQueryEventListener(EventListener):
             elif len(elem) > 1:
                 src, dst = term.split(' in ')
         try:
-            # print(Q_(src).to(dst))
-            result = description = str(Q_(src).to(dst))
+            src = ureg.parse_expression(src, case_sensitive=False)
+            dst = ureg.parse_expression(dst, case_sensitive=False)
+            result = description = str(src.to(dst))
         except Exception as e:
             result = description = "No result"
 
