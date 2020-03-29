@@ -8,7 +8,7 @@ from ulauncher.api.shared.action.RenderResultListAction import RenderResultListA
 from ulauncher.api.shared.action.CopyToClipboardAction import CopyToClipboardAction
 from pint import UnitRegistry
 
-ureg = UnitRegistry()
+ureg = UnitRegistry(autoconvert_offset_to_baseunit=True)
 Q_ = ureg.Quantity
 
 logging.basicConfig()
@@ -25,7 +25,7 @@ class UnitsExtension(Extension):
 class KeywordQueryEventListener(EventListener):
     def on_event(self, event, extension):
         # Get query
-        term = (event.get_argument() or '').lower()
+        term = (event.get_argument() or '')
         elem = term.split(' to ')
         if len(elem) > 1:
             src, dst = term.split(' to ')
@@ -42,8 +42,9 @@ class KeywordQueryEventListener(EventListener):
             elif len(elem) > 1:
                 src, dst = term.split(' in ')
         try:
-            # print(Q_(src).to(dst))
-            result = description = str(Q_(src).to(dst))
+            src = ureg.parse_expression(src, case_sensitive=False)
+            dst = ureg.parse_expression(dst, case_sensitive=False)
+            result = description = str(src.to(dst))
         except Exception as e:
             result = description = "No result"
 
