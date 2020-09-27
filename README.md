@@ -4,4 +4,6 @@
 
 Icons from the [Numix project](https://github.com/numixproject).
 
+**ProTip:** To convert temperature units use `degF` and `degC` (e.g. `u 42 degf to degc`).
+
 ![ulauncher-units extension demo](demo.gif)
