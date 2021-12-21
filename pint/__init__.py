@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 """
     pint
     ~~~~
@@ -11,22 +10,34 @@
     :copyright: 2016 by Pint Authors, see AUTHORS for more details.
     :license: BSD, see LICENSE for more details.
 """
-from __future__ import with_statement
-
-
-import pkg_resources
-from .formatting import formatter
-from .registry import (UnitRegistry, LazyRegistry)
-from .errors import (DimensionalityError, OffsetUnitCalculusError,
-                   UndefinedUnitError)
-from .util import pi_theorem, logger
 
 from .context import Context
+from .errors import (  # noqa: F401
+    DefinitionSyntaxError,
+    DimensionalityError,
+    LogarithmicUnitCalculusError,
+    OffsetUnitCalculusError,
+    PintError,
+    RedefinitionError,
+    UndefinedUnitError,
+    UnitStrippedWarning,
+)
+from .formatting import formatter, register_unit_format
+from .measurement import Measurement
+from .quantity import Quantity
+from .registry import ApplicationRegistry, LazyRegistry, UnitRegistry
+from .unit import Unit
+from .util import logger, pi_theorem  # noqa: F401
 
+try:
+    from importlib.metadata import version
+except ImportError:
+    # Backport for Python < 3.8
+    from importlib_metadata import version
 
-try:                # pragma: no cover
-    __version__ = pkg_resources.get_distribution('pint').version
-except:             # pragma: no cover
+try:  # pragma: no cover
+    __version__ = version("pint")
+except Exception:  # pragma: no cover
     # we seem to have a local copy not installed without setuptools
     # so the reported version will be unknown
     __version__ = "unknown"
@@ -36,60 +47,106 @@ except:             # pragma: no cover
 _DEFAULT_REGISTRY = LazyRegistry()
 
 #: Registry used for unpickling operations.
-_APP_REGISTRY = _DEFAULT_REGISTRY
+application_registry = ApplicationRegistry(_DEFAULT_REGISTRY)
 
 
-def _build_quantity(value, units):
-    """Build Quantity using the Application registry.
-    Used only for unpickling operations.
+def _unpickle(cls, *args):
+    """Rebuild object upon unpickling.
+    All units must exist in the application registry.
+
+    Parameters
+    ----------
+    cls : Quantity, Magnitude, or Unit
+    *args
+
+    Returns
+    -------
+    object of type cls
+
     """
     from .unit import UnitsContainer
 
-    global _APP_REGISTRY
+    for arg in args:
+        # Prefixed units are defined within the registry
+        # on parsing (which does not happen here).
+        # We need to make sure that this happens before using.
+        if isinstance(arg, UnitsContainer):
+            for name in arg:
+                application_registry.parse_units(name)
 
-    # Prefixed units are defined within the registry
-    # on parsing (which does not happen here).
-    # We need to make sure that this happens before using.
-    if isinstance(units, UnitsContainer):
-        for name in units.keys():
-            _APP_REGISTRY.parse_units(name)
-
-    return _APP_REGISTRY.Quantity(value, units)
+    return cls(*args)
 
 
-def _build_unit(units):
-    """Build Unit using the Application registry.
-    Used only for unpickling operations.
-    """
-    from .unit import UnitsContainer
+def _unpickle_quantity(cls, *args):
+    """Rebuild quantity upon unpickling using the application registry."""
+    return _unpickle(application_registry.Quantity, *args)
 
-    global _APP_REGISTRY
 
-    # Prefixed units are defined within the registry
-    # on parsing (which does not happen here).
-    # We need to make sure that this happens before using.
-    if isinstance(units, UnitsContainer):
-        for name in units.keys():
-            _APP_REGISTRY.parse_units(name)
+def _unpickle_unit(cls, *args):
+    """Rebuild unit upon unpickling using the application registry."""
+    return _unpickle(application_registry.Unit, *args)
 
-    return _APP_REGISTRY.Unit(units)
+
+def _unpickle_measurement(cls, *args):
+    """Rebuild measurement upon unpickling using the application registry."""
+    return _unpickle(application_registry.Measurement, *args)
 
 
 def set_application_registry(registry):
-    """Set the application registry which is used for unpickling operations.
+    """Set the application registry, which is used for unpickling operations
+    and when invoking pint.Quantity or pint.Unit directly.
 
-    :param registry: a UnitRegistry instance.
+    Parameters
+    ----------
+    registry : pint.UnitRegistry
     """
-    assert isinstance(registry, UnitRegistry)
-    global _APP_REGISTRY
-    logger.debug('Changing app registry from %r to %r.', _APP_REGISTRY, registry)
-    _APP_REGISTRY = registry
+    application_registry.set(registry)
+
+
+def get_application_registry():
+    """Return the application registry. If :func:`set_application_registry` was never
+    invoked, return a registry built using :file:`defaults_en.txt` embedded in the pint
+    package.
+
+    Returns
+    -------
+    pint.UnitRegistry
+    """
+    return application_registry
 
 
 def test():
     """Run all tests.
 
-    :return: a :class:`unittest.TestResult` object
+    Returns
+    -------
+    unittest.TestResult
     """
     from .testsuite import run
+
     return run()
+
+
+# Enumerate all user-facing objects
+# Hint to intersphinx that, when building objects.inv, these objects must be registered
+# under the top-level module and not in their original submodules
+__all__ = (
+    "Context",
+    "Measurement",
+    "Quantity",
+    "Unit",
+    "UnitRegistry",
+    "PintError",
+    "DefinitionSyntaxError",
+    "DimensionalityError",
+    "OffsetUnitCalculusError",
+    "RedefinitionError",
+    "UndefinedUnitError",
+    "UnitStrippedWarning",
+    "formatter",
+    "get_application_registry",
+    "set_application_registry",
+    "register_unit_format",
+    "pi_theorem",
+    "__version__",
+)
